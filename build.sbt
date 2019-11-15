@@ -2,13 +2,22 @@ organization := "nextwireless"
 name := "Healthcheckerui"
 version := "0.1.0"
 
-scalaVersion := "2.13.0"
+scalaVersion := "2.12.9"
 resolvers += "jitpack" at "https://jitpack.io"
-
+resolvers += Resolver.bintrayRepo("hmil", "maven")
 libraryDependencies ++= Seq(
-  "com.github.outwatch.outwatch" %%% "outwatch" % "a332851",
-  "org.scalatest" %%% "scalatest" % "3.0.8" % Test
+    "com.github.outwatch.outwatch" %%% "outwatch" % "a332851",
+  "org.scala-js" %%% "scalajs-dom" % "0.9.7",
+//  "fr.hmil" %%% "roshttp" % "2.2.3",
+    "org.scalatest" %%% "scalatest"        % "3.0.8" % Test,
+    "com.beachape"  %%% "enumeratum"       % "1.5.13",
+    "com.beachape"  %%% "enumeratum-circe" % "1.5.13",
+//    "eu.timepit"    %%% "refined"          % "0.9.2",
+  "io.circe" %%% "circe-parser" % "0.12.3"
+  //    "io.circe"      %%% "circe-refined"    % "0.9.3"
 )
+libraryDependencies += "com.pepegar" %%% "hammock-core"  % "0.8.4"
+libraryDependencies += "com.pepegar" %%% "hammock-circe" % "0.8.4"
 
 enablePlugins(ScalaJSBundlerPlugin)
 scalacOptions += "-P:scalajs:sjsDefinedByDefault"
@@ -19,19 +28,21 @@ scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule)) // configur
 
 scalacOptions ++=
   "-encoding" :: "UTF-8" ::
-  "-unchecked" ::
-  "-deprecation" ::
-  "-explaintypes" ::
-  "-feature" ::
-  "-language:_" ::
-  "-Xlint" ::
-  "-Xlint:adapted-args" ::
-  "-Wextra-implicit" ::
-  "-Xlint:infer-any" ::
-  "-Wvalue-discard" ::
-  "-Xlint:nullary-override" ::
-  "-Xlint:nullary-unit" ::
-  Nil
+    "-unchecked" ::
+    "-deprecation" ::
+    "-explaintypes" ::
+    "-feature" ::
+    "-language:_" ::
+    "-Xlint" ::
+    "-Xlint:adapted-args" ::
+//  "-Wextra-implicit" ::
+    "-Xlint:infer-any" ::
+//  "-Wvalue-discard" ::
+    "-Xlint:nullary-override" ::
+    "-Xlint:nullary-unit" ::
+//    "-J-Xmx8G" ::
+//    "-J-Xss1024M" ::
+    Nil
 
 // hot reloading configuration:
 // https://github.com/scalacenter/scalajs-bundler/issues/180
@@ -51,8 +62,10 @@ webpackBundlingMode in fastOptJS := BundlingMode.LibraryOnly() // https://scalac
 // this is a workaround for: https://github.com/scalacenter/scalajs-bundler/issues/180
 lazy val copyFastOptJS = TaskKey[Unit]("copyFastOptJS", "Copy javascript files to target directory")
 copyFastOptJS := {
-  val inDir = (crossTarget in (Compile, fastOptJS)).value
+  val inDir  = (crossTarget in (Compile, fastOptJS)).value
   val outDir = (crossTarget in (Compile, fastOptJS)).value / "dev"
-  val files = Seq(name.value.toLowerCase + "-fastopt-loader.js", name.value.toLowerCase + "-fastopt.js") map { p => (inDir / p, outDir / p) }
+  val files = Seq(name.value.toLowerCase + "-fastopt-loader.js", name.value.toLowerCase + "-fastopt.js") map { p =>
+    (inDir / p, outDir / p)
+  }
   IO.copy(files, overwrite = true, preserveLastModified = true, preserveExecutable = true)
 }
